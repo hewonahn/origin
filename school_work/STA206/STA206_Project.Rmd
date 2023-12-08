@@ -1,0 +1,385 @@
+---
+title: "STA206_Project"
+output:
+  word_document: default
+  html_document: default
+date: "2023-12-07"
+---
+```{r}
+library('caret')
+library('glmnet')
+library("dplyr")
+library("Stat2Data")
+library("MASS")
+library("corrplot")
+```
+
+
+```{r}
+bodyfat <- read.table("bodyfat.txt")
+colnames(bodyfat) <- c("density", "percent_bodyfat", "age", "weight", "height", "neck_circumference", "chest_circumference", "abdomen_circumference", "hip_circumference", "thigh_circumference", "knee_circumference", "ankle_circumference", "biceps_circumference", "forearem_circumference", "wrist_circumference")
+```
+
+# Data Exploration 
+
+```{r}
+summary(bodyfat)
+```
+We have percent bodyfat = 0. By using Gini Siri Equation, it turns out to be negative number therefore it was 0. -> numerical error therefore the observation should be eliminated. Body fat can't be neither 0 or negative so we can't use the point. (Observation 182)
+
+```{r}
+sapply(bodyfat, class)
+```
+
+```{r}
+any(is.na(bodyfat)) ## No NAs in the dataset. -> Imputation is not needed 
+```
+```{r}
+par(mfrow = c(2,3), mar = c(2,1,2,1))
+for(i in 1:6){
+  hist(bodyfat[,i], main = paste("histogram of ", names(bodyfat)[i]))
+}
+```
+
+
+```{r}
+par(mfrow = c(3,3), mar = c(2,1,2,1))
+for(i in 7:15){
+  hist(bodyfat[,i], main = paste("histogram of ", names(bodyfat)[i]))
+}
+```
+
+```{r}
+par(mfrow = c(3,3), mar = c(2,1,2,1))
+for(i in 3:11){
+  plot(bodyfat[,i], bodyfat$percent_bodyfat, 
+       main = paste(names(bodyfat)[i], "/ percent bodyfat"))
+}
+```
+
+```{r}
+par(mfrow = c(2,2), mar = c(2,1,2,1))
+for(i in 12:15){
+  plot(bodyfat[,i], bodyfat$percent_bodyfat, 
+       main = paste(names(bodyfat)[i], "/percent bodyfat"))
+}
+```
+
+## Identifying Influential Point 
+
+To identify influential point we use sample full model.
+
+```{r}
+## Not using density as our predictors.
+predictors <- bodyfat[ ,2:15]
+sample_fit <- lm(percent_bodyfat ~ . , data = predictors)
+```
+
+```{r}
+plot(sample_fit, which = 4)
+```
+
+
+```{r}
+plot(sample_fit, which = 5)
+```
+
+```{r}
+## Due to very high weight. Kinda align with association. Included. 
+sample_fit2 <- lm(percent_bodyfat ~ . , data = predictors[-39, ])
+per.change = abs((sample_fit$fitted.values - predict.lm(sample_fit2, predictors[, 2:14]))/sample_fit$fitted.values) * 100
+summary(per.change)
+```
+
+```{r}
+## Due to very abnormal ankle size 
+sample_fit2 <- lm(percent_bodyfat ~ . , data = predictors[-86, ])
+per.change = abs((sample_fit$fitted.values - predict.lm(sample_fit2, predictors[, 2:14]))/sample_fit$fitted.values) * 100
+summary(per.change)
+```
+
+```{r}
+# Not very influencial in prediction <- included
+sample_fit2 <- lm(percent_bodyfat ~ . , data = predictors[-175, ])
+per.change = abs((sample_fit$fitted.values - predict.lm(sample_fit2, predictors[, 2:14]))/sample_fit$fitted.values) * 100
+summary(per.change)
+```
+
+* Observation 86 looks pretty influential -> might be eliminated -> measurement error 
+* Observation 42 is a clear measurement error -> should be eliminated
+* Observation 182 should be eliminated since bodyfat = 0 
+
+## Cleaned Data 
+
+```{r}
+cleaned_bodyfat <- bodyfat[c(-86,-42, -182), ]
+```
+
+```{r}
+par(mfrow = c(2,3), mar = c(2,1,2,1))
+for(i in 1:6){
+  hist(cleaned_bodyfat[,i], main = paste("histogram of ", names(cleaned_bodyfat)[i]))
+}
+```
+
+```{r}
+par(mfrow = c(3,3), mar = c(2,1,2,1))
+for(i in 7:15){
+  hist(cleaned_bodyfat[,i], main = paste("histogram of ", names(cleaned_bodyfat)[i]))
+}
+```
+
+```{r}
+par(mfrow = c(3,3), mar = c(2,1,2,1))
+for(i in 3:11){
+  plot(cleaned_bodyfat[,i], cleaned_bodyfat$percent_bodyfat, 
+       main = paste(names(cleaned_bodyfat)[i], "/ percent bodyfat"))
+}
+```
+
+```{r}
+par(mfrow = c(2,2), mar = c(2,1,2,1))
+for(i in 12:15){
+  plot(cleaned_bodyfat[,i], cleaned_bodyfat$percent_bodyfat, 
+       main = paste(names(cleaned_bodyfat)[i], "/ percent bodyfat"))
+}
+```
+
+
+```{r}
+cor(cleaned_bodyfat[ ,2:15])
+```
+
+```{r}
+M <- cor(cleaned_bodyfat[ ,2:15])
+colnames(M) <- c("%_bodyfat", "age", "weight", "height", "neck", "chest", "abdomen", "hip", "thigh", "knee", "ankle", "biceps", "forearem", "wrist")
+rownames(M) <- c("%_bodyfat", "age", "weight", "height", "neck", "chest", "abdomen", "hip", "thigh", "knee", "ankle", "biceps", "forearem", "wrist")
+corrplot(M)
+```
+
+The data is suffering from strong multicollinearity. 
+
+```{r}
+## Calculating VIF 
+
+X <- cleaned_bodyfat[ ,3:15]
+r_inv <- solve(cor(X))
+diag(r_inv)
+```
+weight, abdomen, chest and hip are showing high collinearity with other variables. VIF > 10.  
+
+```{r}
+X <- cleaned_bodyfat[ ,3:15]
+X_new <- X[ , c(-2,-5,-6,-7)]
+r_inv <- solve(cor(X_new))
+diag(r_inv)
+```
+
+Deleting those variable with extremely high VIF significantly reduces the VIF of other variables as well. 
+
+```{r}
+cleaned_bodyfat_2 <- cleaned_bodyfat[ ,c(-4,-7, -8,-9)]
+```
+
+```{r}
+M <- cor(cleaned_bodyfat_2[ ,2:11])
+colnames(M) <- c("bodyfat", "age", "hght", "neck", "thigh", "knee", "ankle", "bicp", "arm", "wrist")
+rownames(M) <- c("bodyfat", "age", "hght", "neck", "thigh", "knee", "ankle", "bicp", "arm", "wrist")
+corrplot.mixed(M)
+
+```
+
+To do: Use scale function before fit the model 
+
+```{r}
+predictors= cleaned_bodyfat_2[3:11]
+data <- as.data.frame(cbind(cleaned_bodyfat_2[ ,2], predictors))
+colnames(data)[1] = 'percent_bodyfat'
+str(data)
+```
+
+```{r}
+set.seed(1234)
+
+train_index = createDataPartition(data$percent_bodyfat, p = 0.8, list = FALSE)
+
+train_X = scale(data[train_index,-1],center=T,scale=T)
+train_X=as.data.frame(train_X)
+train_Y = data[train_index,1 ]
+train_data=as.data.frame(cbind(train_Y,train_X))
+colnames(train_data)[1] = 'percent_bodyfat'
+
+test_X =scale(data[-train_index,-1],center=T,scale=T)
+test_X= as.data.frame(test_X)
+test_Y = data[-train_index, 1 ]
+test_data=as.data.frame(cbind(test_Y,test_X))
+colnames(test_data)[1] = 'percent_bodyfat'
+
+data_X = scale(data[,-1],center=T,scale=T)
+data_Y=data[,1]
+data=as.data.frame(cbind(data_Y,data_X))
+colnames(data)[1] = 'percent_bodyfat'
+```
+
+
+```{r}
+none_mod = lm(percent_bodyfat~1, data=train_data) #model with only intercept
+full_mod_interaction = lm(percent_bodyfat ~.^2, data = train_data) #full model with interaction terms 
+full=lm(percent_bodyfat ~., data = train_data) # full model without interaction terms 
+
+
+forward_aic=stepAIC(none_mod, scope=list(upper=full_mod_interaction, lower = ~1), direction="both", k=2, trace = FALSE)
+backward_aic=stepAIC(full_mod_interaction, scope=list(upper=full_mod_interaction, lower = ~1), direction="both", k=2, trace = FALSE)
+
+
+forward_aic_no_interation=stepAIC(none_mod, scope=list(upper=full, lower = ~1), direction="both", k=2, trace = FALSE)
+backward_aic_no_interation=stepAIC(full, scope=list(upper=full, lower = ~1), direction="both", k=2, trace = FALSE)
+# same model using full model without interaction term 
+
+```
+
+```{r}
+all_variables = colnames(train_X)
+for (i in 1:(length(all_variables) - 1)) {
+  for (j in (i+1):length(all_variables)) {
+    interaction_name <- paste(all_variables[i], all_variables[j], sep = ":")
+    train_X[,as.character(interaction_name)]=train_X[[all_variables[i]]]*train_X[[all_variables[j]]]}
+}  # adding interaction terms to data matrix
+
+all_variables = colnames(test_X)
+for (i in 1:(length(all_variables) - 1)) {
+  for (j in (i+1):length(all_variables)) {
+    interaction_name <- paste(all_variables[i], all_variables[j], sep = ":")
+    test_X[,as.character(interaction_name)]=test_X[[all_variables[i]]]*test_X[[all_variables[j]]]}
+} # adding interaction terms to data matrix
+
+
+X=train_X # interation terms included
+y=train_Y
+
+X_no_interaction=X[,1:9]
+
+lambdas=seq(0,10,length=1000)  
+cv_fit = cv.glmnet(as.matrix(X), y, alpha = 0, lambda = lambdas)
+plot(cv_fit)
+lambda_min=cv_fit$lambda.min
+ridge = glmnet(X, y, alpha = 0, lambda = lambda_min)
+
+
+lambdas=seq(0,10,length=1000)
+cv_fit_no_interaction = cv.glmnet(as.matrix(X_no_interaction), y, alpha = 0, lambda = lambdas)
+plot(cv_fit_no_interaction)
+lambda_min2=cv_fit_no_interaction$lambda.min
+ridge_no_interation= glmnet(X_no_interaction, y, alpha = 0, lambda = lambda_min2)
+```
+
+
+```{r}
+forward_sum=summary(forward_aic)
+backward_sum=summary(backward_aic)
+
+forward_sum_no_interaction=summary(forward_aic_no_interation)
+
+
+
+# R square 
+ridge_y_pred = predict(ridge, newx = as.matrix(X), s = lambda_min)
+ridge_SSE <- sum((y - ridge_y_pred)^2)  # Residual Sum of Squares
+SST <- sum((y - mean(y))^2) # Total Sum of Squares
+ridge_SSR=SST-ridge_SSE
+ridge_r_squared <- 1 - ridge_SSE/SST
+
+ridge_y_pred2 = predict(ridge_no_interation, newx = as.matrix(X_no_interaction), s = lambda_min2)
+ridge_SSE2<- sum((y - ridge_y_pred2)^2)  # Residual Sum of Squares
+ridge_SSR2=SST-ridge_SSE2
+ridge_r_squared2 <- 1 - ridge_SSE2/SST
+
+
+R_square=c(forward_sum$r.squared,backward_sum$r.squared,ridge_r_squared,forward_sum_no_interaction$r.squared,ridge_r_squared2)
+# adj_r_square
+n=length(y)
+p=length(coef(ridge))
+p2=length(coef(ridge_no_interation))
+ridge_adj.r=1-(ridge_SSE/(n-p))/(SST/(n-1))
+ridge_adj.r2=1-(ridge_SSE2/(n-p2))/(SST/(n-1))
+
+adj_R_square=c(forward_sum$adj.r.squared,backward_sum$adj.r.squared,ridge_adj.r,forward_sum_no_interaction$adj.r.squared,ridge_adj.r2)
+# AIC 
+aic_ridge=n*log(ridge_SSE/n)+2*p
+aic_ridge2=n*log(ridge_SSE2/n)+2*p2
+
+
+aic=c(AIC(forward_aic),AIC(backward_aic),aic_ridge,AIC(forward_aic_no_interation),aic_ridge2)
+#BIC
+bic_ridge=n*log(ridge_SSE/n)+log(n)*p
+bic_ridge2=n*log(ridge_SSE2/n)+log(n)*p2
+
+bic=c(BIC(forward_aic),BIC(backward_aic),bic_ridge,BIC(forward_aic_no_interation),bic_ridge2)
+#Mean squared prediction error 
+forward_mspe=sum((test_Y-predict(forward_aic, test_X))^2)/length(test_Y)
+backward_mspe=sum((test_Y-predict(backward_aic, test_X))^2)/length(test_Y)
+ridge_mspe=sum((test_Y-predict(ridge, as.matrix(test_X)))^2)/length(test_Y)
+forward2_mspe=sum((test_Y-predict(forward_aic_no_interation, test_X[,1:9]))^2)/length(test_Y)
+ridge_mspe2=sum((test_Y-predict(ridge_no_interation, as.matrix(test_X[,1:9])))^2)/length(test_Y)
+
+MSPE=c(forward_mspe,backward_mspe,ridge_mspe,forward2_mspe,ridge_mspe2)
+
+
+
+# Mallos' Cp criterion
+
+
+forward_mallow=(anova(forward_aic)[10,2]/anova(full_mod_interaction)[46,3])-(length(train_Y)-2*length(coef(forward_aic)))
+backward_mallow=(anova(backward_aic)[27,2]/anova(full_mod_interaction)[46,3])-(length(train_Y)-2*length(coef(backward_aic)))
+ridge_mallow=(ridge_SSE/anova(full_mod_interaction)[46,3])-(length(train_Y)-2*length(coef(ridge)))
+forward_mallow2=(anova(forward_aic_no_interation)[6,2]/anova(full)[10,3])-(length(train_Y)-2*length(coef(forward_aic_no_interation)))
+ridge_mallow2=(ridge_SSE2/anova(full)[10,3])-(length(train_Y)-2*length(coef(ridge_no_interation)))
+
+mallow=c(forward_mallow,backward_mallow,ridge_mallow,forward_mallow2,ridge_mallow2)
+
+
+
+
+
+critera= data.frame(
+  R_square = R_square,
+  adj_R_square = adj_R_square,
+  AIC = aic,
+  BIC = bic,
+  MSPE = MSPE,
+  Mallow = mallow,
+  number_of_variables=c(length(coef(forward_aic)),length(coef(backward_aic)),length(coef(ridge)),length(coef(forward_aic_no_interation)),length(coef(ridge_no_interation)))
+)
+
+rownames(critera)=c("forward_stepwise","backward_stepwise","ridge","stepwise_without_interaction","ridge_without_interaction")
+
+critera
+```
+```{r}
+summary(forward_aic_no_interation)
+final_model=lm(percent_bodyfat~thigh_circumference+age+height+forearem_circumference+wrist_circumference,data=data) 
+summary(final_model)
+```
+
+```{r}
+coef(ridge_no_interation)
+
+```
+
+
+```{r}
+
+plot(test_Y, predict(ridge_no_interation, as.matrix(test_X[,1:9])), 
+     main = "Scatter plot with y=x line",
+     xlab = "Actual Values",
+     ylab = "Predicted Values")
+
+abline(a = 0, b = 1, col = "red")
+
+legend("topleft", legend = "y=x", col = "red", lty = 1)
+```
+
+```{r}
+
+
+```
