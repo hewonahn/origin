@@ -1,0 +1,201 @@
+---
+title: "STA135_report"
+author: "HEE WON AHN"
+date: "2023-12-09"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(klaR)
+setwd('/Users/heewonahn/data')
+data=read.csv('wine.csv')
+set.seed(498022)
+```
+
+
+```{r}
+str(data)
+```
+
+# EDA of data 
+# How well does two principle components explain type of wine and quality of wine? 
+# Using clustering and classification model, how can principle components classify type of wine? 
+# How does scaling affect PCA components and performance of classification? 
+
+
+#there are total 13 variables
+#type of each variable: quality and red are qualitative variables but other 9 variables are quantitative variables
+
+```{r}
+sum(is.na(data)) # there is no missing value. 
+n = nrow(data) #there are total 600 data 
+
+lbls <- c('quality 5','quality 6','quality 7')
+pct <- round(100*table(data$quality)/n)
+lab <- paste(lbls,pct)
+lab <- paste(lab,'%',sep='')
+pie(table(data$quality),labels=lab,col=c('blue','purple','green'),
+    main='Distribution of wine quality')
+# distribution of quality of wines are equal with frequency of 33% each 
+
+
+
+lbls <- c('Red', 'White')
+pct <- round(100 * table(data$red) / nrow(data))
+lab <- paste(lbls, pct, '%', sep='')
+pie(table(data$red),
+    labels = lab,
+    col = lbls,
+    main = 'Distribution of wine type',
+    cex.main = 1.2,  # Increase the main title font size
+    cex = 0.8,      # Adjust label font size
+    radius = 0.8     # Adjust the size of the pie chart
+)
+
+# distribution of type of wines are equal with frequency of 50% each 
+
+
+
+par(mfrow = c(2, 6))
+for (i in 1:11) {
+  hist(data[, i], 
+       main = paste(names(data)[i]), 
+       xlab = paste('Wine', names(data)[i]),
+       col = 'skyblue',  # Change color to sky blue
+       border = 'black', # Add a black border
+       breaks = 20        # Adjust the number of bins
+  )
+}  
+
+# it seems from histogram that that fixed.acidity, volatitle.acidity, ciric.acid, residual.sugar, chlorides, free.sulfur.dioxide, total.sulfur.dioxide,sulphates, alcohol are skewed to the right 
+# it seems from histogram that PH and density  normally distributed 
+
+
+cor(data[1:10])
+
+#correlation between free.sulfur.dioxide and total.sulfur.dioxide is 0.77 which shows high linearity.
+#correlation between fixed.acidity and density is 0.58 which shows some linearity.
+#correlation between residual.sugar and total.sulfur.dixoide is 0.58 which shows some linearity.
+
+# correlation between other variables are between -0.5 and 0.5 which mean there are not much linearity.
+
+
+
+```
+
+
+```{r}
+par(mfrow = c(1,1))
+
+PCA=prcomp(data)
+
+plot(PCA$sdev^2, 
+     type="b",
+     xlab="Principal component",
+     ylab="Eigenvalue",
+     main="Scree plot,\n unscaled data")
+
+cumsum(PCA$sdev^2/sum(PCA$sdev^2)) # first principal component explain 96% of total variance
+
+
+
+plot(PCA$x[,1],PCA$x[,2],col=as.factor(data$quality),xlab="PC1",ylab="PC2",main='Wine quality on PCA plot') #first principal component and second principal component cannot explan quality of wines pretty well
+plot(PCA$x[,1],PCA$x[,2],col=as.factor(data$red),xlab="PC1",ylab="PC2",main='Wine type on PCA plot') #plot of first principal component and second principal compent  an explan quality of wines pretty well
+
+
+
+cls=kmeans(PCA$x[,1:2],2)
+plot(PCA$x[,1:2],col=cls$cluster,main='Clustering on PC1 and PC2') 
+tab_clus = table(Predicted = cls$cluster, Actual = data$red)
+1-sum(diag(tab_clus))/sum(tab_clus)  #classifications rate=9%
+
+# even though clustering is not classification method, we can distinguish type of wine by using K-means clustering because data points of red and white wine are close to each other when plotted by two principal components. 
+
+
+# using PCA, we may be able to classify type of wine. 
+
+par(mfrow=c(1,2))
+for (i in 1:2){
+  qqnorm(PCA$x[,i])
+}
+
+
+
+#  two principal components does not perfectly follow normal distribution,but we may try to fisher's lda classifciaton model. 
+
+X = PCA$x[,c(1,2)]
+y = data$red
+ind <- sample(dim(X)[1], round(dim(X)[1]/2))
+Xtraining <- X[ind,]
+Xtesting <- X[-ind,]
+ytraining <- y[ind]
+ytesting <- y[-ind]
+ldaFit <- lda(Xtraining, ytraining)
+prd <- predict(ldaFit, Xtesting)
+tab <- table(Predicted = prd$class, Actual = ytesting)
+1-sum(diag(tab))/sum(tab) # classifications rate 8%
+partimat(X, as.factor(y), method = "lda",main='Clssification using unscaled X variables')
+
+# even though principle of components does not folloow normal distriubtion perfectly, LDA can still
+# classify type of wines using two pricniple of componetns significantly
+
+
+```
+
+#How does scaling affect PCA components and performance of classifciaton? 
+```{r}
+
+PCA= prcomp(data[,1:11])
+stdPCA <- prcomp(scale(data[,1:11]))
+
+## scree plots for unscaled vs. standardized
+plot(PCA$sdev^2, 
+     type="b",
+     xlab="Principal component",
+     ylab="Eigenvalue",
+     main="unscaled data")
+
+# cumulative proportion of variance explained
+
+plot(stdPCA$sdev^2, 
+     type="b",
+     xlab="Principal component",
+     ylab="Eigenvalue",
+     main="scaled data")
+
+
+cumsum(stdPCA$sdev^2/sum(stdPCA$sdev^2))
+# we need more than two principal of components to explain scaled data
+
+e1 = PCA$rotation[,1] 
+re1 = stdPCA$rotation[,1]
+par(mfrow=c(1,1))
+
+barplot(e1/PCA$sdev[1], main="Loadings for the 1st PC,\n unscaled data",cex.names = 0.8,las=2)
+# for unsealed data, total.sulfur.dioxide plays significant role
+barplot(re1/stdPCA$sdev[1], main="Loadings for the 1st PC, \n rescaled data",cex.names = 0.8, las=2)
+# for scaled data, all the variables plays similar role 
+
+scale_X = stdPCA$x[,c(1,2)]
+y = data$red
+ind <- sample(dim(scale_X)[1], round(dim(scale_X)[1]/2))
+scale_Xtraining =  scale_X[ind,]
+scale_Xtesting = scale_X[-ind,]
+ytraining = y[ind]
+ytesting = y[-ind]
+scale_ldaFit = lda(scale_Xtraining, ytraining)
+scale_prd = predict(scale_ldaFit, scale_Xtesting)
+scale_tab = table(Predicted = scale_prd$class, Actual = ytesting)
+1-sum(diag(scale_tab))/sum(scale_tab) # classifications rate 10%
+partimat(scale_Xtesting, as.factor(ytesting), method = "lda",main='Classifcation using scaled X variables')
+
+
+# scaling data does improve performance of classification model. 
+
+
+
+
+```
