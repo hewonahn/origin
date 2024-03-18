@@ -94,20 +94,25 @@ This additional research question enhances the depth of our analysis and provide
 
 ># 3. Background
 
-In order to explore the impact of class size on academic achievement among students, the Tennessee State Department of Education carried out a four-year randomized study called the Student/Teacher Achievement Ratio (STAR) from 1985 to 1989.
+
+Tennessee State Department of Education conducted a 4 years (1985-1999) randomized study (Student/Teacher Achievement Ratio) to evaluate impact of class size effect on various academic performance among preschoolers students.
+
+
 
 During the experiment, students from kindergarten through third grade (K-3) were randomly assigned to three different class sizes:
 
 1. Small (15-17 students)
-2. Regular with a full-time Aide (22-25 students) 
+2. Regular with Aide (22-25 students) 
 3. Regular (22-25 students)
 
 
-The academic performance of students was evaluated by using the Stanford Achievement Tests (SATs) developed by the Psychological Corporation in 1983.
+The academic performance of students (math, reading, listening, etc) was evaluated by using the Stanford Achievement Tests (SATs) made by the Psychological Corporation in 1983.
 
-A total of 79 schools participated in this experiment, with over 7,000 students involved every year. Each participating school included at least one class of each size, and students were randomly assigned to one of the class types. 
 
-The STAR dataset contains information on 11,601 students who participated in the experiment with decent amount of missing values. It includes a variety of data which contains demographic variables, school and class identifiers, details about schools and teachers, experimental conditions (class types), scores from achievement tests (SAT), and scores related to motivation and self-concept. 
+A collective of 79 schools engaged in this experiment, surpassing more than 7,000 students annually. Each school involved in the STAR project was equipped with at least one clas each class type, and students were assigned to different class types through random allocation.
+
+
+The STAR dataset contains information on 11,601 students who participated in the experiment with significant proportion of missing values. It includes a variety of data which contains demographic variables, school and class identifiers, details about schools and teachers, experimental conditions (class types), scores from achievement tests (SAT), and scores related to motivation and self-concept. 
 
 Given our goal of examining the impact of class size on first-grade math scores, relevant variables in the dataset include:
 
