@@ -709,8 +709,8 @@ This test indicates that small class size is associated with the highest mean ma
 
 Result of our analysis seems reasonable for following reasons: 
 
-Smaller class sizes and regular classes with full-time teacher aides promote individualized attention, reduced distractions, tailored instruction, and increased student participation, leading to higher academic performance of math score. 
 
+Smaller class sizes may benefit students  by promoting  individualized attention, reduced distractions, tailored instruction, and increased student participation, which may lead to higher academic performance of math score students. 
 
 ***
 
@@ -850,7 +850,9 @@ We used the STAR project data to answer two main questions: Are there discernibl
 
 The inferential analysis revealed that there are indeed differences, with the smallest class size being most strongly associated with higher math scaled scores. When compared to regular classes and regular classes with an aide, small class sizes are expected to result in an increase of 13.14 and 11.46 points in mean math scores respectively.
 
-Similarly, when the school ID is fixed, the mean math score is expected to increase by 11.46 when the class size is small compared to when its regular with aide.
+From result of analysis, We may assume that smaller class sizes promote individualized attention, reduced distractions, tailored instruction, and increased student participation, which lead to higher academic performance of math score.
+
+
 
 Based on the given results, here are some suggestions:
 
@@ -859,7 +861,7 @@ Considering the quantitative relationship observed between smaller class sizes a
 
 Additional research could be conducted based on this research findings. For instance, investigating whether the relationship between smaller class sizes and math scores persists in different grades or subjects could be explored. Such research could provide further insights and have a greater impact on educational policies and practice
 
-The STAR experiment's strengths lie in its randomized assignment of students to different class size conditions (small, regular, and regular with a teacher aide), thorough monitoring by graduate students, a large sample size exceeding 10,000 students, and longitudinal follow-up over four years from kindergarten to third grade. These aspects collectively ensure the integrity of the experimental design, minimize biases, enhance statistical power, and provide valuable insights into the sustained impact of class size on academic performance.
+The strength of STAR experiment exist in its randomized assignment of students to different class size conditions (small, regular, and regular with a teacher aide), thorough monitoring by graduate students, a large sample size exceeding 10,000 students, and longitudinal follow-up over four years from kindergarten to third grade. These aspects  ensure the integrity of the experimental design, minimize biases, enhance statistical power, and provide valuable insights into impact of class size on academic performance.
 
 
 In the extended analysis, it became evident that additional support for low-income students should be made beyond the provision of free lunches. Direct policies targeting students academic needs could be beneficial. Moreover, having more school-related data would be advantageous. The current dataset does not provide sufficient variables for analyzing school-level average scores effectively from the outset.
@@ -1093,7 +1095,7 @@ From Figure above indicate a strong relationship between Mean Math Score and Fre
 
 ### 8.3 Conclusion
 
-Based on the analysis, it appears that there is a negative linear association between the Free Lunch Ratio, which serves as a indicator for parental income levels, and the Mean Math Score. This suggests that students from lower-income backgrounds may face challenges that impact their academic performance in mathematics.
+Based on the analysis, it appears that there is a negative linear association between the free lunch ratio, which serves as a indicator for parental income levels, and mean math score. This suggests that students from lower-income backgrounds may face challenges that impact their academic performance in mathematics.
 
 To address this issue, government level support of students from economically disadvantaged backgrounds should be made. This could include providing additional resources and support in schools with higher proportions of students receiving free lunch, such as targeted tutoring, mentorship programs, access to educational resources, and reduce barriers of learning. 
 Additionally, People should focus on improving access to quality education and economic opportunities for disadvantaged communities, and these may contribute to narrowing the achievement gap in mathematics and promoting academic success for all students regardless of economic status.
