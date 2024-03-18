@@ -59,12 +59,13 @@ attach(data)
 ***
 ># 1. Abstract
 
-This report delves into the impact of class size on first-grade student's mean math scores using the Tennessee Student/Teacher Achievement Ratio (STAR) dataset. We aim to explore the purpose and motivation of our analysis in the introduction while examining the dataset's data source, target population, sampling method, and variables in the background. 
-We will conduct descriptive analysis, utilizing both univariate and multivariate descriptive statistics, to explore variables relevant to our primary question. Furthermore,  we will employ our statistical methodology (Two-Way Anova) in inferential analysis to address our primary question. We will execute a sensitivity analysis to evaluate the robustness of our model.
+The purpose of this report is to investigate the impact of class size on first-grade student's mean math scores using the Tennessee Student/Teacher Achievement Ratio (STAR) dataset. We aim to explore the purpose and motivation of our analysis in the introduction while examining the overall short summary (source, target, sampling method) of dataset in the background. We will conduct descriptive analysis to visually explore variables relevant to our primary question with plots and tables. Furthermore, we will apply our statistical model (Two-Way Anova Model) in inferential analysis to address our primary question. Lastly, we will execute a sensitivity analysis to evaluate the robustness of our model.
 
-In this final report, we extend the initial study made in the inital report by introducing a third question of interest. With the initial questions, we also aim to analyze the factors influencing the average math scores across different schools in an extended analysis. By focusing on the mean math scores of schools, we seek to identify and understand the variables that contribute to variations in academic performance within the educational system. 
+Improvements compared to initial report are:  
 
-We also omitted unnecessary plots and tables from the initial report and included explanations for our findings (Tukey's range test). This approach allows us to focus on the most relevant insights.
+We conduct extended analysis to answer our third question of interest. we seek to identify and understand the variables that contribute to variations in academic performance within school level factors by focusing on mean math scores per school. 
+
+We also omitted unnecessary plots and tables from the initial report and included explanations for our findings (Tukey's range test) for better interpretation. 
 
 
 ># 2. Introduction
@@ -74,20 +75,19 @@ The primary focus of this analysis is to delve into the impact of class size on 
 
 We aim to answer two key questions of interest:
 
-1. Are there discernible differences in math-scaled scores among 1st-grade students across different class sizes?
+1. Are there discernible differences in math-scaled scores among 1st grade students across different class sizes?
 
-2. If such differences exist, which class size is most strongly associated with higher math-scaled scores in 1st grade?
+2. Which class size is most strongly associated with higher math-scaled scores in 1st grade?
 
-By answering these questions, this analysis aims to provide valuable insights into the relationship between class size and academic performance, specifically in mathematics education during the early years of schooling (1st grade). 
+By answering these questions, this analysis aims to provide valuable insights into the relationship between class size and academic performance in mathematics education during the early year of schooling (1st grade). 
 
-These findings have the potential to inform educational policies and practices, guiding decision-makers in optimizing classroom environments to enhance students learning. Additionally, we seek to contribute meaningfully to society by helping to suggest effective educational strategies and interventions.
+Results and findings of our analysis may be used by policy makers to optimize class size to enhance overall students learning and we may contribute to society by suggesting effective educational strategies and system. 
 
 We also aim to answer one more question of interest in extended analysis:
 
 3. what factors influence the average math scores across different schools? 
 
-
-This additional research question enhances the depth of our analysis and provides valuable insights into the broader context of educational outcomes.
+This additional research question enhances the depth of our analysis and provides valuable insights into the broader context of educational outcomes. Also, this question may answer why school ID indicator should be included in our two-way ANOVA model in inferential analysis. 
 
 
 ***
@@ -109,10 +109,10 @@ During the experiment, students from kindergarten through third grade (K-3) were
 The academic performance of students (math, reading, listening, etc) was evaluated by using the Stanford Achievement Tests (SATs) made by the Psychological Corporation in 1983.
 
 
-A collective of 79 schools engaged in this experiment, surpassing more than 7,000 students annually. Each school involved in the STAR project was equipped with at least one clas each class type, and students were assigned to different class types through random allocation.
+A collective of 79 schools engaged in this experiment, surpassing more than 7,000 students annually. Each school involved in the STAR project was equipped with at least one of all three class types, and students were assigned to different class types through random allocation.
 
 
-The STAR dataset contains information on 11,601 students who participated in the experiment with significant proportion of missing values. It includes a variety of data which contains demographic variables, school and class identifiers, details about schools and teachers, experimental conditions (class types), scores from achievement tests (SAT), and scores related to motivation and self-concept. 
+The STAR dataset contains information on 11,601 students who participated in the experiment with significant proportion of missing values. It includes a variety of data which contains demographic variables, school and class identifiers, details about schools and teachers, experimental conditions (class types) and scores from achievement tests (SAT).
 
 Given our goal of examining the impact of class size on first-grade math scores, relevant variables in the dataset include:
 
@@ -188,12 +188,14 @@ The number of total data in the original `STAR` is 11601 with 5036 rows with at 
 
 We decide to remove NA values for following reasons:
 
-1. Data Integrity: Removing NA values helps maintain the integrity of the dataset by ensuring that the analysis is based on complete and accurate information.
-2. Sample Size Consideration: Despite the removal of NA values, the dataset still contains a substantial number of observations, with over 5000. This large sample size provides sufficient statistical power for meaningful analysis and robust conclusions.
-3. Even distribution of class sizes: The distribution of class sizes across school IDs, even after removing NA values, are even which aligns well with our goal of this analysis. 
+1. Data Integrity: Removing NA values helps maintain the integrity of the dataset since data set contains complete and accurate information.
+
+2. Sample Size Consideration: Dataset still contains over 6000 Dataset which is large sample size that may provide sufficient statistical power for meaningful analysis and robust conclusions.
+
+3. Even distribution of class sizes: Distribution of class sizes across school IDs are still even after removing NA values which aligns well with our goal of this analysis 
 
 
-Even though each variable has about 5000 missing values, considering that there are 5036 rows with missing values in the data, it suggests that most rows with missing values have multiple variables missing.
+Even though each variable has about 5000 missing values, considering that there are 5036 rows with missing values in the data, there exist many rows with multiple variables missing.
 
 
 \
@@ -419,7 +421,7 @@ print(point_plot)
 In practice, we might assume a positive linear relationship between a teacher's experience and their mean math score. However, the scatter plot suggests that there is no significant linear relationship between teaching experience and mean math score for each teacher. 
 
 Furthermore, as the average remains consistent around 525 to 530 across teacher career levels, additional analysis regarding teacher career is deemed unnecessary. 
-Ultimately, analysis regarding teacher experience and career are unnecessary for further investigation.
+Therefore, analysis regarding teacher experience and career are unnecessary for further investigation.
 
 
 ```{r ,echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.height=5, fig.align = "center"}
@@ -508,7 +510,7 @@ grid.arrange(school_mean_math,compare_box,ncol= 2)
 - `mean_math_score_school` : the average math score per school
 
 
-Despite small sample size may affected greater variability in mean scores when examining scores by teacher , the observed differences remain statistically significant. Therefore, further analysis is needed to understand the underlying factors contributing to these significant variations.
+Despite small sample size may affected greater variability in mean scores per teacher, further analysis will be helpful to understand which underlying factors contribute to these significant variations.
 
 There are notable disparities in the **mean math scores across schools**, ranging from a minimum of 489.4 to a maximum of 570.7. 
 
@@ -535,7 +537,7 @@ We use an **imbalanced two-way ANOVA model without interaction** in this data fo
 We choose to include the `class type` factor and `school ID` for each corresponding reasons: 
 
 1. Our primary interest lies in assessing the main effect of class size.
-2. Changes in mean math scores may be influenced by factors related to the school, such as school quality or location. Therefore, it's essential to analyze how class type impacts math scores while considering the potential influence of the school
+2. Changes in mean math scores may be influenced by factors related to the school, such as school quality or location. Therefore, it's essential to consider the potential influence of the school to focus solely on class size effect.
 
 
 The model we use is as follows: 
@@ -707,10 +709,9 @@ ggplot(tukey_df, aes(x = Group_Diff, y = diff)) +
 
 ```
 
-Upon comparing regular classes with regular classes having an aide, we find that the 95% confidence interval contains zero. This suggests that there is no significant difference between these factors at the significance level 0.05.  
+By comparing regular classes with regular classes having an aide on the tukey's test, we find that the 95% confidence interval contains zero. This suggests that there is no significant difference between these factors at the significance level 0.05.  
 
-
-However, upon examining the confidence intervals for the other two comparisons, we observe that they do not contain zero. This leads us to conclude that there are significant differences between small class types and others at the significance level 0.05.  
+However, by examining the confidence intervals for the other two comparisons (small with regular, small with regular+aide), we observe that they do not contain zero. This leads us to conclude that there exist significant differences between small class types and others at the significance level 0.05.  
 
 This test indicates that small class size is associated with the highest mean math scores in 1st grade.
 
@@ -855,19 +856,19 @@ If so, which class size is most strongly associated with higher math-scaled scor
 
 The inferential analysis revealed that there exist differences, with the smallest class size being most strongly associated with higher math-scaled scores in grade 1. When compared to regular classes and regular classes with an aide, small class sizes are expected to result in an increase of 13.14 and 11.46 points in mean math scores respectively.
 
-From the result of the analysis, We may assume that the reasons for higher mean math scores in smaller class sizes are due to individualized attention, reduced distractions, tailored instruction, and increased student participation.
+From the result of the analysis, potential reasons for higher mean math scores in smaller class sizes may be due to individualized attention, reduced distractions, tailored instruction, and increased student participation.
 
 
-Based on the given results, here are some suggestions:
+Based on the given results, some suggestions are:
 
 Considering the positive relationship observed between smaller class sizes and higher math scores, school administrators may consider policies to reduce class sizes. Since our research indicates a positive association between smaller class sizes and academic performance, reducing class sizes could potentially enhance the academic outcomes of students.
 
-Additional research could be conducted based on these research findings. For instance, investigating whether the relationship between smaller class sizes and math scores persists in different grades or subjects could be explored. Such research could provide further insights and have a greater impact on educational policies and practice
+Additional research could be conducted based on these research findings. For instance, investigating whether the relationship between smaller class sizes and math scores persists in different grades or subjects could be explored. Such research could provide further insights and have a greater impact on educational policies and practice.
 
 The strength of the STAR experiment exists in its randomized assignment of students to different class size conditions (small, regular, and regular with a teacher aide), thorough monitoring by graduate students, large sample size exceeding 10,000 students, and longitudinal follow-up over four years from kindergarten to third grade. These aspects ensure the integrity of the experimental design, minimize biases and provide valuable insights into the impact of class size on academic performance.
 
 
-In the extended analysis, it became evident that additional support for low-income students should be made beyond the provision of free lunches. Direct policies targeting students' academic needs could be beneficial. Moreover, having more school-related data would be advantageous. The current dataset does not provide sufficient variables for analyzing school-level average scores effectively from the outset.
+In the extended analysis, it became evident that additional support related to education for low-income students should be made. Direct policies targeting students' academic needs could be beneficial. Moreover, having more school-related data would be advantageous. The current dataset does not provide sufficient variables for analyzing school-level average scores effectively.
 
 
 ***
@@ -1096,10 +1097,19 @@ The figure above indicates a strong relationship between mean math score and fre
 
 ### 8.3 Conclusion
 
-Based on the analysis, it appears that there is a negative linear association between the free lunch ratio, which serves as an indicator for parental income levels, and mean math score. This suggests that students from lower-income backgrounds may face challenges that impact their academic performance in mathematics.
+⁤Based on our extended analysis with linear regression above, we may conclude that there exists a negative linear association between the free lunch ratio, which serves as an indicator for parental income levels, and mean math score per school. ⁤⁤This suggests that students from lower-income backgrounds may face challenges that impact their academic performance in mathematics. ⁤
 
-To solve this issue, government-level support for students from economically disadvantaged backgrounds should be made. This could include providing additional resources and support in schools with higher proportions of students receiving free lunch, such as targeted tutoring, mentorship programs, and  access to educational resources.
-Additionally, People should focus on improving access to quality education and economic opportunities for disadvantaged communities, and these may contribute to narrowing the achievement gap in mathematics and promoting academic success for all students regardless of economic status.
+For remedy for this social issue, government-level support for students from economically disadvantaged backgrounds should be made. ⁤⁤This could include providing additional resources and support in schools with higher proportions of students receiving free lunch. ⁤
+
+which may include:
+
+1. Targeted tutoring and counseling
+2. Mentorship programs 
+3. ensure access to educational resources
+
+
+Additionally, People should focus on improving access to quality education and economic opportunities for disadvantaged students to narrow the academic performance gap in mathematics between high income students which may ultimately lead to academic success for all students regardless of economic status. 
+
 
 ##
 
