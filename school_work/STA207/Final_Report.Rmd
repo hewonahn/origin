@@ -94,7 +94,7 @@ This additional research question enhances the depth of our analysis and provide
 
 ># 3. Background
 
-To investigate the effects of class size on student achievement in the primary grades, the Tennessee State Department of Education initiated a four-year randomized study known as the Student/Teacher Achievement Ratio (STAR) from 1985 to 1989.
+In order to explore the impact of class size on academic achievement among students, the Tennessee State Department of Education carried out a four-year randomized study called the Student/Teacher Achievement Ratio (STAR) from 1985 to 1989.
 
 During the experiment, students from kindergarten through third grade (K-3) were randomly assigned to three different class sizes:
 
@@ -102,15 +102,16 @@ During the experiment, students from kindergarten through third grade (K-3) were
 2. Regular with a full-time Aide (22-25 students) 
 3. Regular (22-25 students)
 
-A total of 79 schools participated in the experiment, with over 7,000 students involved. Each participating school included at least one class of each size, and students were randomly assigned to one of the class types.
 
 The academic performance of students was evaluated by using the Stanford Achievement Tests (SATs) developed by the Psychological Corporation in 1983.
 
-The STAR dataset contains information on 11,601 students who participated in the experiment. It includes a variety of data which contains demographic variables, school and class identifiers, details about schools and teachers, experimental conditions (class types), scores from achievement tests (SAT), and scores related to motivation and self-concept.
+A total of 79 schools participated in this experiment, with over 7,000 students involved every year. Each participating school included at least one class of each size, and students were randomly assigned to one of the class types. 
 
-Given our objective of examining the impact of class size on first-grade math scores, relevant variables in the dataset include:
+The STAR dataset contains information on 11,601 students who participated in the experiment with decent amount of missing values. It includes a variety of data which contains demographic variables, school and class identifiers, details about schools and teachers, experimental conditions (class types), scores from achievement tests (SAT), and scores related to motivation and self-concept. 
 
-- Demographic information of students (gender, race, date of birth)
+Given our goal of examining the impact of class size on first-grade math scores, relevant variables in the dataset include:
+
+- information of students (gender, race, date of birth, presence of free lunch, attendance)
 - Class type variables (small, regular, regular with aide)
 - School details (urbanicity, school ID)
 - Teacher information (teacher ID, years of teaching experience, teaching career, demographic details)
@@ -1118,6 +1119,10 @@ Linear Statistical Models, 5th edition. (pp. 951-977)
 Achilles, C. M. (2012). NCPEA Policy Brief CLASS-SIZE POLICY: THE STAR EXPERIMENT AND RELATED CLASS-SIZE STUDIES, Volume 1, Number 2, October 2012. National Council of Professors of Educational Administration (NCPEA)
 
 C.M. Achilles; Helen Pate Bain; Fred Bellott; Jayne Boyd-Zaharias; Jeremy Finn; John Folger; John Johnston; Elizabeth Word, 2008, "Tennessee's Student Teacher Achievement Ratio (STAR) project"
+
+
+Finn, J.D., Boyd-Zaharias, J., Fish, R.M., & Gerber, S.B. (2007). "Project STAR and Beyond: Database User’s Guide"  HEROS, Incorporated. 
+
 
 # Code appendix
 
