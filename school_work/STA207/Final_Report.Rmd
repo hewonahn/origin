@@ -64,7 +64,6 @@ The purpose of this report is to investigate the impact of class size on first-g
 Improvements compared to initial report are:  
 
 We conduct extended analysis to answer our third question of interest. we seek to identify and understand the variables that contribute to variations in academic performance within school level factors by focusing on mean math scores per school. 
-
 We also omitted unnecessary plots and tables from the initial report and included explanations for our findings (Tukey's range test) for better interpretation. 
 
 
@@ -418,9 +417,10 @@ print(point_plot)
 
 
 
-In practice, we might assume a positive linear relationship between a teacher's experience and their mean math score. However, the scatter plot suggests that there is no significant linear relationship between teaching experience and mean math score for each teacher. 
+In practice, we might assume a positive linear relationship between a teacher's experience and students' mean math score. However, the scatter plot suggests that there is no significant linear relationship between teaching experience and mean math score for each teacher. 
 
-Furthermore, as the average remains consistent around 525 to 530 across teacher career levels, additional analysis regarding teacher career is deemed unnecessary. 
+Furthermore, as the average remains consistent around 525 to 530 across teacher career levels, we may conclude that teacher career does not have linear association with students' mean math scores. 
+
 Therefore, analysis regarding teacher experience and career are unnecessary for further investigation.
 
 
@@ -449,7 +449,7 @@ ggplot(merged_data, aes(x = factor(school_id), y = mean_math_score, color = fact
 
 ```
 
-For urbanicity, when classified as "inner city" math scores tend to be lower compared to other urbanity. Further analysis is needed for this variable. Additionally, most schools are situated in rural areas. Class sizes are uniformly distributed across each school, suggesting that each school has a consistent range of class sizes. Therefore, including school ID as a variable and examining the effect of class size when it is fixed may provide insights into the impact of class size on academic performance.
+For urbanicity, when school ID is classified as "inner city" math scores tend to be lower compared to other area. Further analysis is needed for this variable. Additionally, most schools are situated in rural areas. Class sizes are uniformly distributed across each school, suggesting that each school has a consistent range of class sizes. Therefore, including school ID as a variable and examining the effect of class size when it is fixed may provide insights into the impact of class size on academic performance.
 
 
 **Given the potential difference in mean math scores across different schools above, it would be insightful to explore visualizations depicting the distribution of mean math scores per school**
@@ -490,31 +490,32 @@ compare_box=ggplot(combined_data, aes(x = Dataset, y = Score, fill = Dataset)) +
   geom_text(data = data.frame(Dataset = "Mean Math Score (Teacher)", Score = max(combined_data$Score) + 5, count = count_teacher),
             aes(label = paste("n=", count)), 
             position = position_nudge(x = -0.35), size = 3, color = "black", vjust = 3) +
+  
   geom_text(data = data.frame(Dataset = "Mean Math Score (School)", Score = max(combined_data$Score) + 5, count = count_school),
             aes(label = paste("n=", count)), 
             position = position_nudge(x = -0.35), size = 3, color = "black", vjust = 3) +
+  
   labs(title = "Comparison of Mean Math Scores",
        x = "Dataset",
        y = "Mean Math Score") +
+  
   scale_fill_manual(values = c("Mean Math Score (Teacher)" = "lightblue", "Mean Math Score (School)" = "lightgreen"),
-                     labels = c("Mean Math Score (Teacher)", "Mean Math Score (School)")) +
+                     labels = c("Mean Math Score (School)", "Mean Math Score (Teacher)")) +
+  
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 grid.arrange(school_mean_math,compare_box,ncol= 2)
-
-
 
 ```
 
 - `mean_math_score_school` : the average math score per school
 
 
-Despite small sample size may affected greater variability in mean scores per teacher, further analysis will be helpful to understand which underlying factors contribute to these significant variations.
+Despite our small sample size is not enough to fully investigate larger variability in mean scores per school, further analysis will be helpful to understand which underlying factors contribute to these significant variations.
 
-There are notable disparities in the **mean math scores across schools**, ranging from a minimum of 489.4 to a maximum of 570.7. 
 
-The boxplot illustrates the dispersion of mean math scores across schools compared to mean math scores across teachers, showing that the values are more scattered across schools. 
+The boxplot illustrates the dispersion of **mean math scores across schools** compared to mean math scores across teachers, showing that the values are more scattered across schools (minimum of 489.4 to maximum of 570.7). 
 
 while `class types` appear to be an important measure in project `STAR`, the significant variation observed among schools suggests that `school-level factors` may also play a crucial role. 
 
@@ -715,10 +716,9 @@ However, by examining the confidence intervals for the other two comparisons (sm
 
 This test indicates that small class size is associated with the highest mean math scores in 1st grade.
 
-Result of our analysis seems reasonable for following reasons: 
+Result of our analysis can be interpreted by: 
 
-
-Smaller class sizes may benefit students  by promoting individualized attention, reducing distractions, and increasing student participation, which may lead to higher academic performance of math score students. 
+Smaller class sizes may benefit students by promoting individualized attention, reducing distractions, and increasing student participation, which may lead to higher academic performance of math score students. 
 
 ***
 
@@ -820,9 +820,8 @@ med_qq_plot = ggplot(med_fit , aes(sample = rstandard(med_fit))) + geom_qq(color
 model_res=ggplot(data, aes(x = class_type)) +
   geom_point(aes(y = fit$residuals, color = "Mean model"), position = position_jitter(width = 0.1), alpha = 0.7) +
   geom_point(aes(y = med_fit$residuals, color = "Median model"), position = position_jitter(width = 0.1), alpha = 0.7) +
-  labs(title = "Comparison of Residuals from Two Models", x = "Star1", y = "Residuals") +
-    scale_color_manual(name = "Model", values = c("Mean model" = "red", "Median model" = "blue")) +
-  theme_minimal()
+  labs(title = "Comparison of Residuals from Two Models", x = "Class Type", y = "Residuals") +
+    scale_color_manual(name = "Model", values = c("Mean model" = "red", "Median model" = "blue")) + scale_x_discrete(labels = c("1" = "small", "2" = "regular", "3" = "regular+aide"))+theme_minimal()
 
 
 grid.arrange(med_qq_plot,model_res,ncol = 2)
@@ -861,9 +860,9 @@ From the result of the analysis, potential reasons for higher mean math scores i
 
 Based on the given results, some suggestions are:
 
-Considering the positive relationship observed between smaller class sizes and higher math scores, school administrators may consider policies to reduce class sizes. Since our research indicates a positive association between smaller class sizes and academic performance, reducing class sizes could potentially enhance the academic outcomes of students.
+1. Considering the positive relationship observed between smaller class sizes and higher math scores, school administrators may consider policies to reduce class sizes. Since our research indicates a positive association between smaller class sizes and academic performance, reducing class sizes could potentially enhance the academic outcomes of students.
 
-Additional research could be conducted based on these research findings. For instance, investigating whether the relationship between smaller class sizes and math scores persists in different grades or subjects could be explored. Such research could provide further insights and have a greater impact on educational policies and practice.
+2. Additional research could be conducted based on these research findings. For instance, investigating whether the relationship between smaller class sizes and math scores persists in different grades or subjects could be explored. Such research could provide further insights and have a greater impact on educational policies and practice.
 
 The strength of the STAR experiment exists in its randomized assignment of students to different class size conditions (small, regular, and regular with a teacher aide), thorough monitoring by graduate students, large sample size exceeding 10,000 students, and longitudinal follow-up over four years from kindergarten to third grade. These aspects ensure the integrity of the experimental design, minimize biases and provide valuable insights into the impact of class size on academic performance.
 
