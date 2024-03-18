@@ -379,7 +379,7 @@ ggplot(merged_data, aes(x = class_type, y = mean_math_score)) +
 
 ```
 
-As we can see from the boxplot, it is evident that classes categorized as `"small"` `"regular + aide"` and `"regular"` exhibit higher mean values, higher maximum values and higher minimum values in that order. This suggests that there may be a significant relationship between students’ average scores and class size.
+As we can see from the boxplot, it is evident that classes categorized as `"small"` `"regular + aide"` and `"regular"` exhibit higher mean values, higher maximum values and higher minimum values in that order. This suggests that there may be a significant relationship between students average scores and class size.
 
 
 
@@ -848,7 +848,9 @@ We have decided to keep **mean** as our summary measure for our analysis even th
 
 We used the STAR project data to answer two main questions: Are there discernible differences in math scaled scores among 1st-grade students across different class sizes? If such differences exist, which class size is most strongly associated with higher math scaled scores in 1st grade? 
 
-The inferential analysis revealed that there are indeed differences, with the smallest class size being most strongly associated with higher math scaled scores. 
+The inferential analysis revealed that there are indeed differences, with the smallest class size being most strongly associated with higher math scaled scores. When compared to regular classes and regular classes with an aide, small class sizes are expected to result in an increase of 13.14 and 11.46 points in mean math scores respectively.
+
+Similarly, when the school ID is fixed, the mean math score is expected to increase by 11.46 when the class size is small compared to when its regular with aide.
 
 Based on the given results, here are some suggestions:
 
@@ -1120,7 +1122,7 @@ Achilles, C. M. (2012). NCPEA Policy Brief CLASS-SIZE POLICY: THE STAR EXPERIMEN
 
 C.M. Achilles; Helen Pate Bain; Fred Bellott; Jayne Boyd-Zaharias; Jeremy Finn; John Folger; John Johnston; Elizabeth Word, 2008, "Tennessee's Student Teacher Achievement Ratio (STAR) project"
 
-# Code appendix {-}
+# Code appendix
 
 https://github.com/hewonahn/origin/tree/main/school_work/STA207
 
