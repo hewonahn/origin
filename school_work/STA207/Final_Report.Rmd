@@ -1,0 +1,1134 @@
+---
+title: Examining Class Types:Impact on Average Math Scores
+author: Hee Won Ahn 
+date: "2024-03-18"
+output:
+  html_document:
+    toc: True 
+    toc_float: True 
+    df_print: paged
+    number_sections: False
+---
+
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.pos = 'H')
+library(AER)
+library(dplyr)
+library(ggplot2)
+library(MASS)
+library(kableExtra)
+library(car)
+library(gridExtra)
+library(haven)
+library(gridExtra)
+library(tidyverse)
+library(knitr)
+
+#colSums(is.na(data))
+#na_in_rows = rowSums(is.na(data)) > 0
+#sum(na_in_rows)
+
+```
+
+```{r, include=FALSE}
+
+path = file.path("/Users/heewonahn/Downloads/dataverse_files/PROJECT STAR/STAR_Students.sav")
+
+dataset = read_sav(path)
+columns= c("g1classtype","g1schid","g1surban","g1tchid","g1thighdegree","g1tcareer","g1tyears","g1tmathss",'g1present','g1freelunch')
+
+
+data= dataset[,columns]
+#str(data)
+colnames(data) <- c("class_type", "school_id", "school_urban", "teacher_id", "teacher_degree", "teacher_career", "teacher_experience", "math1",'present_day','free_lunch')
+
+attach(data)
+
+
+#colSums(is.na(data))
+#na_in_rows = rowSums(is.na(data)) > 0
+#sum(data)
+
+
+```
+
+
+
+
+***
+># 1. Abstract
+
+This report delves into the impact of class size on first grade students mean math scores using the Tennessee Student/Teacher Achievement Ratio (STAR) dataset. We aim to explore the purpose and motivation of our analysis in the introduction, while examining the dataset's data source, target population, sampling method, and variables in the background. 
+We will conduct descriptive analysis, utilizing both univariate and multivariate descriptive statistics, to explore variables relevant to our primary question. Subsequently, we will employ our statistical methodology in inferential analysis to address our primary question. We will execute sensitivity analysis to evaluate the robustness of our model.
+
+In this final report, we extend the initial study made in inital report by introducing a third question of interest. With the initial questions, we now also aim to analyze the factors influencing the average math scores across different schools in extended analysis. By focusing on the mean math scores of schools, we seek to identify and understand the variables that contribute to variations in academic performance within the educational system. 
+
+We also omitted unnecessary plots and tables from the initial report and included explanations for our findings. This approach allows us to focus on the most relevant insights.
+
+
+***
+
+># 2. Introduction
+
+
+The primary focus of this analysis is to delve into the impact of class size on student performance, leveraging insights four-year from study Tennessee Student Teacher Achievement Ratio (STAR) randomized experiment by Tennessee General Assembly and conducted by the State Department of Education.
+
+We aim to answer two key questions of interest:
+
+1. Are there discernible differences in math scaled scores among 1st-grade students across different class sizes?
+
+2. If such differences exist, which class size is most strongly associated with higher math scaled scores in 1st grade?
+
+By answering these questions, this analysis aims to provide valuable insights into the relationship between class size and academic performance, specifically in mathematics education during the early years of schooling (1st grade). 
+
+These findings have the potential to inform educational policies and practices, guiding decision-makers in optimizing classroom environments to enhance students learning. Additionally, we seek to contribute meaningfully to society by help suggesting effective educational strategies and interventions.
+
+We also aim to answer one more questions of interest in extented analysis:
+
+3. what factors influence the average math scores across different schools? 
+
+
+This additional research question enhances the depth of our analysis and provides valuable insights into the broader context of educational outcomes.
+
+
+
+***
+># 3. Background
+
+To investigate the effects of class size on student achievement in the primary grades, the Tennessee State Department of Education initiated a four-year longitudinal randomized study known as the Student/Teacher Achievement Ratio (STAR) from 1985 to 1989.
+
+During the experiment, students from kindergarten through third grade (K-3) were randomly assigned to three different class sizes: Small (15-17 students), Regular with a full-time Aide (22-25 students), and Regular (22-25 students).
+
+A total of 79 schools participated in the experiment, with over 7,000 students involved. Each participating school included at least one class of each size, and students were randomly assigned to one of the class types.
+
+The academic performance of students was assessed using the Stanford Achievement Tests (SATs) developed by the Psychological Corporation in 1983.
+
+The STAR dataset contains information on 11,601 students who participated in the experiment. It includes a variety of data, such as demographic variables, school and class identifiers, details about schools and teachers, experimental conditions (class types), scores from both achievement tests, and scores related to motivation and self-concept.
+
+Given our objective of examining the impact of class size on first-grade math scores, relevant variables in the dataset include:
+
+- Demographic information of students (gender, race, date of birth)
+- Class type variables (small, regular, regular with aide)
+- School details (urbanicity, school ID)
+- Teacher information (teacher ID, years of teaching experience, demographic details)
+- First grade math scores of students.
+
+
+In our analysis, since our primary goal aligns with relationship between class size and grade 1 math score, we only focus on variables related to 1st grade students, school, and teachers. 
+
+***
+
+
+># 4. Descriptive analysis 
+
+
+At first, we obtain the variables from `STAR` data set that is only related to answer two primary questions, whether there are any differences in  `math scaled scores` in 1st grade across `class types`, and if so, which `class type` is associated with the highest `math scaled scores` in 1st grade. 
+
+we will explore the data sets and find summary statistics to examine the structure and characteristics of the data. 
+Since we only examined the math scores in 1st grade in this project, we deleted columns unrelated to 1st-grade math scores such as reading scores.
+
+A summary of the definitions of seven variables after selecting related variables  can be described as follows: 
+
+
+- `math1`: total math scaled score in 1st grade
+- `teacher_experience`: years of teacher's total teaching experience in 1st grade
+- `school_id`:factor indicating school ID in 1st grade
+- `class_type`:factor indicating the STAR class type in 1st grade: regular, small, or regular-with-aide
+- `teacher_id`: factor indicating teacher ID **the basic unit of our analysis**
+- `school_urban`: School urbanicity of school (suburban, rural, urban, inner city)
+- `teacher_career` :Teacher career ladder level grade 1
+- `teacher_degree` : Teacher highest degree grade 1 
+\
+
+
+**Missing Values**
+
+
+
+
+```{r ,echo=FALSE, warning=FALSE, message=FALSE, fig.width=8, fig.height=5, fig.align = "center"}
+
+na_count <- colSums(is.na(data))
+
+na_count_df <- data.frame(columns = names(na_count), na_count = na_count)
+
+data=na.omit(data)
+
+cleaned_data <- na.omit(data)
+cleaned_data_count <- nrow(cleaned_data)
+cleaned_data_count_text <- paste("Data Count (After NA Removal):", cleaned_data_count)
+
+ggplot(na_count_df, aes(x = reorder(columns, -na_count), y = na_count)) +
+  geom_bar(stat = "identity", fill = "darkblue", width = 0.2) +
+  geom_text(aes(label = na_count), vjust = -1, size = 2) +
+  geom_hline(yintercept = cleaned_data_count, linetype = "dashed", color = "red") +
+  annotate("text", x = nrow(na_count_df) + 0.5, y = cleaned_data_count + 100, 
+           label = cleaned_data_count_text, color = "red", hjust = 1.1,vjust=0.7,size=2.6) +
+  labs(title = "NA Values Count", x = "Columns", y = "NA Count") +
+  coord_flip() +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+```
+
+
+
+
+The number of total data in the original `STAR` is 11601 with 5036 rows with at least one NA.
+
+We decide to remove NA values for following reasons:
+
+1. Data Integrity: Removing NA values helps maintain the integrity of the dataset by ensuring that the analysis is based on complete and accurate information.
+2. Sample Size Consideration: Despite the removal of NA values, the dataset still contains a substantial number of observations, with over 5000. This large sample size provides sufficient statistical power for meaningful analysis and robust conclusions.
+3. Even distribution of class sizes: The distribution of class sizes across school IDs, even after removing NA values, are even which aligns well with our goal of this analysis. 
+
+
+Even though each variable has about 5000 missing values, considering that there are 5036 rows with missing values in the data, it suggests that most rows with missing values have multiple variables missing.
+
+
+\
+
+
+```{r , echo=FALSE,warning=FALSE}
+
+data$teacher_id=as.factor(data$teacher_id)
+data$school_id=as.factor(data$school_id)
+data$class_type=as.factor(data$class_type)
+data$school_urban=as.factor(data$school_urban)
+data$teacher_degree=as.factor(data$teacher_degree)
+data$teacher_career=as.factor(data$teacher_career)
+data$free_lunch=as.factor(data$free_lunch)
+
+#summary(data)
+```
+
+<style>
+table {
+  font-size: 0.8em; 
+  width: 50%;        
+}
+</style>
+
+
+
+##### Two variables representing  ID's 
+
+| ID | teacher_id | school_id| 
+-----|-----|-----|
+Number of levels |   335|    76  |
+
+
+
+```{r, echo=FALSE}
+
+class_type <- data.frame(
+  "Class Type" = c("small", "regular", "regular+aide"),
+  "Count" = c(1821, 2433, 2132)
+)
+
+school_urban <- data.frame(
+  "School Urban" = c("Inner city", "Suburban", "Rural", "Urban"),
+  "Count" = c(1291, 1524, 2983, 588)
+)
+
+teacher_degree <- data.frame(
+  "Teacher Degree" = c("Bachelors", "Masters", "Specialist", "Doctoral"),
+  "Count" = c(4144, 2184, 37, 21)
+)
+
+teacher_career <- data.frame(
+  "Teacher Career" = c("chose not to be on career ladder", "Apprentice", "Probation", "Ladder level 1", "Ladder level 2", "Ladder level 3"),
+  "Count" = c(482, 689, 619, 4224, 104, 268)
+)
+
+```
+
+
+
+
+
+##### Frequency table of four qualitative variables {.tabset}
+
+###### class_type {-}
+```{r,echo=FALSE}
+knitr::kable(class_type)
+```
+
+######  school_urban {-}
+```{r,echo=FALSE}
+knitr::kable(school_urban)
+```
+
+
+###### teacher_degree {-}
+```{r,echo=FALSE}
+knitr::kable(teacher_degree,caption='')
+```
+
+######  teacher_career {-}
+```{r,echo=FALSE}
+knitr::kable(teacher_career)
+```
+
+## {-}
+
+
+
+
+##### Summary statistics of two quantitative variables {.tabset}
+
+###### math score {-}
+```{r,echo=FALSE}
+summary_df <- data.frame(
+  value = c("minimum", "1st quantile", "Median", "Mean", "3rd quantile", "maximum", "standard deviation"),
+  math1 = c(404, 500, 529, 530.8, 557, 676, 43.12)
+)
+
+knitr::kable(summary_df)
+```
+
+######  teacher_experience {-}
+```{r,echo=FALSE}
+summary_df <- data.frame(
+  value = c("minimum", "1st quantile", "Median", "Mean", "3rd quantile", "maximum", "standard deviation"),
+ experience = c(0, 4, 10, 11.58, 17, 42, 8.93)
+)
+knitr::kable(summary_df)
+
+```
+
+## {-}
+
+
+
+
+Based on the observed histogram of total math scaled scores in the 1st grade, which appears to approximate a normal distribution form histogram and qqplot, we have selected the **mean** as an appropriate summary statistic, we have added a variable accordingly.
+
+- `mean_math_score` : the average math score per teacher (each class uniquely identified by its assigned teacher)
+
+
+```{r ,echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.height=5, fig.align = "center"}
+
+hist_math=ggplot(data, aes(x = math1)) + 
+  geom_histogram(binwidth = 0.5, fill = "black", color = "blue") +
+  labs(title = "Histogram of Math1", x = "Math Score of 1st grade", y = "Frequency")
+
+qq_math=ggplot(data, aes(sample = math1)) +
+  stat_qq(col = "steelblue", shape = 16) +
+  stat_qq_line(col = "black", lwd = 2, lty = 2) +
+  labs(title = "QQ Plot of Math1 Variable",x="Theoretical Quantiles",y='Sample Quantiles')
+
+
+grid.arrange(hist_math, qq_math, ncol = 2)
+
+```
+
+
+
+
+
+**Mean math score for each teacher** 
+
+```{r ,echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.height=5, fig.align = "center"}
+
+summary_by_teacher = data %>%
+  group_by(teacher_id) %>%
+  summarise(mean_math_score = mean(math1))
+
+merged_data =left_join(data, summary_by_teacher, by ="teacher_id")
+
+#kable(summary_by_teacher, format = "markdown", digits = 2, align = "c") %>%
+#  kable_styling(full_width = FALSE) %>%
+#  scroll_box(height = "300px")
+
+```
+
+
+
+
+
+
+| value              | mean_math_score |
+|--------------------|-----------------|
+| minimum            | 468.3           |
+| 1st quantile      | 514.2          |
+| Median             | 531.0         |
+| Mean               | 530.8           |
+| 3rd quantile       | 547.4           |
+| maximum           | 609.7           |
+| standard deviation | 25.02.      |
+
+
+The mean and median are close, suggesting that the data roughly follows a normal distribution. This indicates a relatively even distribution of mean scores per teacher.
+The minimum value is 468.3 and the maximum value is 609.7, indicating a range of approximately 141.4. This suggests that the spread of data is large.
+
+
+
+**Multivariate descriptive of mean math score per teacher**
+
+```{r ,echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.height=5, fig.align = "center"}
+
+ggplot(merged_data, aes(x = class_type, y = mean_math_score)) +
+  geom_boxplot(fill = "lightblue", color = "blue") +
+  labs(title = "Box plot of Class Types and Mean Math Score",
+       x = "Class Types",
+       y = "Mean Math Score per teacher")+ scale_x_discrete(labels = c("1" = "small", "2" = "regular", "3" = "regular+aide"))
+
+```
+
+As we can see from the boxplot, it is evident that classes categorized as `"small"` `"regular + aide"` and `"regular"` exhibit higher mean values, higher maximum values and higher minimum values in that order. This suggests that there may be a significant relationship between students’ average scores and class size.
+
+
+
+
+```{r ,echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.height=5, fig.align = "center"}
+
+career_mean_scores <- merged_data %>%
+  group_by(teacher_career) %>%
+  summarise(mean_math_score = mean(math1, na.rm = TRUE))
+
+
+point_plot <- ggplot(merged_data, aes(x = teacher_experience , y = mean_math_score, color = teacher_career)) +
+  geom_point() +
+  geom_hline(data = career_mean_scores, aes(yintercept = mean_math_score, color = teacher_career), linetype = "dashed") +
+  labs(title = "Mean Math Score by Teacher Experience and career",
+       x = "Teacher Experience",
+       y = "Mean Math Score",
+       color = "Teacher Career")+
+  theme_minimal() +
+  facet_wrap(~ teacher_career, scales = "free_y", nrow = 2)+  scale_color_discrete(labels = c("1" = "Chose not to be on career ladder", "2" = "Apprentice", "3" = "Probation", "4" = "Ladder level 1", "5" = "Ladder level 2", "6" = "Ladder level 3"))
+
+
+print(point_plot)
+
+
+```
+
+
+
+In practice, we might assume a positive linear relationship between a teacher's experience and their mean math score. However, the scatter plot suggests that there is no significant linear relationship between teaching experience and mean math score for each teacher. 
+
+Furthermore, as the average remains consistent around 525 to 530 across teacher career levels, additional analysis regarding teacher career is deemed unnecessary. 
+Ultimately, analysis regarding teacher experience and career are unnecessary for further investigation.
+
+
+```{r ,echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.height=5, fig.align = "center"}
+
+
+merged_data$school_urban_label =factor(merged_data$school_urban, levels = 1:4, labels = c("Inner city", "Suburban", "Rural", "Urban"))
+
+# Plot with the new variable
+ggplot(merged_data, aes(x = factor(school_id), y = mean_math_score, color = factor(class_type))) +
+  geom_jitter(width = 0.1, alpha = 0.5) +
+  facet_wrap(~school_urban_label, scales = "free") +
+  labs(title = "Scatter Plot of Mean Math Score by School ID",
+       x = "School ID",
+       y = "Mean Math Score per Teacher",
+       color = "Class Size",
+       ) +
+  theme_minimal() +
+  theme(axis.text.x = element_blank()) +
+  scale_color_manual(values = c("lightblue", "blue", "green"),
+                     labels = c("Small", "Regular", "Regular + Aide")) +
+  labs(color = "Class Size")
+
+
+
+
+```
+
+For urbanicity, when classified as "inner city" math scores tend to be lower compared to other urbanity. Further analysis is needed for this variable. Additionally, most schools are situated in rural areas. Class sizes are uniformly distributed across each school, suggesting that each school has a consistent range of class sizes. Therefore, including school ID as a variable and examining the effect of class size when it is fixed may provide insights into the impact of class size on academic performance.
+
+
+**Given the potential difference in mean math scores across different schools above, it would be insightful to explore visualizations depicting the distribution of mean math scores per school**
+
+
+
+```{r eda ,echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.height=5, fig.align = "center"}
+
+
+total_mean_math_score <- mean(merged_data$math1)
+
+school_summary <- merged_data %>%
+  group_by(school_id) %>%
+  summarise(mean_math_score_school = mean(math1)) %>%
+  mutate(diff_from_total_mean = mean_math_score_school - total_mean_math_score)
+
+school_mean_math <- ggplot(school_summary, aes(x = school_id, y = diff_from_total_mean)) +
+  geom_point(size = 3, color = "blue") +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") + 
+  labs(title = "Difference from Total Mean Math Score by School ID",
+       x = "School ID",
+       y = "Difference from Total Mean Math Score") +
+  theme(axis.text.x = element_blank())
+
+
+
+count_school <- length(school_summary$mean_math_score_school)
+count_teacher <- length(summary_by_teacher$mean_math_score)
+
+combined_data <- data.frame(
+  Dataset = rep(c("Mean Math Score (Teacher)", "Mean Math Score (School)"), 
+                c(count_teacher, count_school)),
+  Score = c(school_summary$mean_math_score_school, summary_by_teacher$mean_math_score)
+)
+
+compare_box=ggplot(combined_data, aes(x = Dataset, y = Score, fill = Dataset)) +
+  geom_boxplot() +
+  geom_text(data = data.frame(Dataset = "Mean Math Score (Teacher)", Score = max(combined_data$Score) + 5, count = count_teacher),
+            aes(label = paste("n=", count)), 
+            position = position_nudge(x = -0.35), size = 3, color = "black", vjust = 3) +
+  geom_text(data = data.frame(Dataset = "Mean Math Score (School)", Score = max(combined_data$Score) + 5, count = count_school),
+            aes(label = paste("n=", count)), 
+            position = position_nudge(x = -0.35), size = 3, color = "black", vjust = 3) +
+  labs(title = "Comparison of Mean Math Scores",
+       x = "Dataset",
+       y = "Mean Math Score") +
+  scale_fill_manual(values = c("Mean Math Score (Teacher)" = "lightblue", "Mean Math Score (School)" = "lightgreen"),
+                     labels = c("Mean Math Score (Teacher)", "Mean Math Score (School)")) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+grid.arrange(school_mean_math,compare_box,ncol= 2)
+
+
+
+```
+
+- `mean_math_score_school` : the average math score per school
+
+
+Despite small sample size may affected greater variability in mean scores when examining scores by teacher , the observed differences remain statistically significant. Therefore, further analysis is needed to understand the underlying factors contributing to these significant variations.
+
+There are notable disparities in the **mean math scores across schools**, ranging from a minimum of 489.4 to a maximum of 570.7. 
+
+The boxplot illustrates the dispersion of mean math scores across schools compared to mean math scores across teachers, showing that the values are more scattered across schools. 
+
+while `class types` appear to be an important measure in project `STAR`, the significant variation observed among schools suggests that `school-level factors` may also play a crucial role. 
+
+We will conduct further analysis on factor related to School ID on extended analysis.
+
+***
+
+
+># 5. Inferential analysis 
+
+### 5.1 Model selection 
+
+We use an **imbalanced two-way ANOVA model without interaction** in this data for the following reasons. 
+
+1. Two explanatory variables are affecting the response variable.
+2. The number of observations varies across cells.
+3. Our main goal is to examine the class size's main effect, so we'll exclude the interaction term to focus solely on evaluating each variable's individual effects. 
+
+
+We choose to include the `class type` factor and `school ID` for each corresponding reasons: 
+
+1. Our primary interest lies in assessing the main effect of class size.
+2. Changes in mean math scores may be influenced by factors related to the school, such as school quality or location. Therefore, it's essential to analyze how class type impacts math scores while considering the potential influence of the school
+
+
+The model we use is as follows: 
+
+$$
+Y_{ijk} = \mu_{\cdot\cdot} + \alpha_i+\beta_j +\epsilon_{ijk}, \ k=1,\ldots, 335 \ \ i=1,\ldots, 3 \ \ j=1, \ldots, 76
+$$
+
+- $Y_{ijk}$ = expected mean math score of the $i$th class type, $j$th school, and $k$th teacher.
+
+- $\mu_{\cdot\cdot} = \sum_{i=1}^a\sum_{j=1}^ b\mu_{ij}/(ab)$: population mean of scaled math score within each cell determined by class type and school indicator.
+
+-  $\alpha_i=\mu_{i\cdot} - \mu_{\cdot \cdot}$: main effect of the ith class type.
+
+- $\beta_j=\mu_{\cdot j}-\mu_{\cdot\cdot}$: main effect of the jth school.
+
+- $\epsilon_{ijk}$: random error in the $i$th class type, $j$th school, and $k$th teacher.
+
+- $\mu_{i\cdot} = \sum_{j=1}^b \mu_{ij} /b$
+
+- $\mu_{\cdot j}=\sum_{i=1}^a \mu_{ij}/a.$
+
+- $\sum_{i=1}^a\alpha_i=0 ,\  \sum_{j=1}^b\beta_j=0$
+
+- $i$: represents the class types: 1 for "small", 2 for "regular", and 3 for "regular with aide".
+
+- $j$: index of the school indicator. We have total 76 schools.
+
+- $k$: index of teachers in the $i$th class type and $j$th school. We have total 335 teachers.
+
+
+Assumptions on parameters are as follows:
+
+- $\{\epsilon_{ijk}\}$ are i.i.d. $N(0,\sigma^2)$ where $\sigma$ is a constant
+
+- The observations are independent of each other.
+
+- The effects of the class type and school indicator on the response variable are additive where no interaction between these factors exists.
+
+
+We choose **Type II** two-way ANOVA model because of the following reasons: 
+
+- The sums of squares in Type I ANOVA differ based on variable order.
+- Type II ANOVA enables the calculation of variance explained by each variable independently, focusing solely on their unique contributions, aligning with our specific goal.  
+- In the absence of an interaction term, Type II is the preferred choice.
+
+```{r anova model , scroll=TRUE , echo=FALSE,warning=FALSE}
+
+data=merged_data %>%
+  group_by(teacher_id) %>%
+  summarize(mean_math_score = mean(math1) ,school_id = first(school_id),
+           teacher_experience=first(teacher_experience),class_type=first(class_type) )
+
+data$teacher_id=as.factor(data$teacher_id)
+fit=lm(mean_math_score~class_type+school_id, data=data)
+anova.fit=Anova(fit, type=2)
+#fit
+#summary(fit$coefficients[c(4:60)])
+```
+**Fitted results**
+
+
+```{r , scroll=TRUE , echo=FALSE,warning=FALSE}
+
+interpretation_data <- data.frame(
+  Description = c("Small Class-Regular", "Small Class-Regular with Aide", "School Effect (Maximum Change)", "School Effect (Maximum Change)"),
+  Change = c(13.14, 11.46, 78.59, -8.57),
+  stringsAsFactors = FALSE
+)
+
+
+ggplot(interpretation_data, aes(x = Description, y = Change, color = ifelse(Change > 0, "Increase", "Decrease"))) +
+  geom_point(size = 2) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_text(aes(label = Change), vjust = -0.5, color = "black", size = 3) +
+  scale_color_manual(values = c("red", "blue")) +
+  labs(title = "Interpretation of Fitted Model",
+       y = "Change in Mean Math Score",
+       x = "Description",
+       color = "Change Type") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
+
+```
+
+From the fitted model we may interpret our result by: 
+
+- When the school ID is fixed, the mean math score is expected to increase by 13.14 when the class size is small compared to when it's regular.
+
+- Similarly, when the school ID is fixed, the mean math score is expected to increase by 11.46 when the class size is small compared to when it's regular with aide. 
+
+- When class size is held constant, the expected increase in the mean of math scores is up to a maximum of 78.59, while the expected decrease is up to a maximum of 8.57. This suggests that the school to which students are assigned also plays a significant role in estimating the mean math score.
+
+### 5.2 Hypothesis testing
+
+**ANOVA Table**
+
+| source | sum of square  | degree of freedom | F values | p-value 
+|------|-------|-------|------|-------|-------|
+| class_type | 11675| 2| 20.70|  4.631e-09 | 
+| school_ID  | 133936| 75| 6.33 | <2.2e-16|  
+| residuals  | 72486| 257|
+
+                    
+we conducted an F-test for the `main effects of class types` to answer our first primary question of interest: whether there are any differences in math scaled scores in 1st grade across class types. 
+
+Since our ANOVA model is type II, 
+We define the sum of squares as
+
+- Main effect due to Factor A: ${\rm SSE}_{B}-{\rm SSE}_{A,B}$ 
+- Main effect due to Factor B :${\rm SSE}_{A}-{\rm SSE}_{A,B}$
+
+Given null hypothesis for testing the main effects of class type is 
+
+$H_0: α_1=α_2=α_3$
+
+where each $α_i$ represents the average of the mean test scores within each class type. 
+
+The alternative hypothesis is
+
+$H_1$: not all $α_i’s$ are equal
+
+Our $F^*$ is $\frac{MSTR_(classtype)}{MSE_(residuals)}=20.70$ 
+
+From the ANOVA Table, it is observed that the p-value is less than 0.05.
+Consequently, we may reject the null hypothesis and conclude that there is a main effect of the class types at a given significance level of 0.05.
+
+\
+
+```{r interaction term , echo=FALSE, warning=FALSE, message=FALSE}
+
+full_model=lm(mean_math_score~class_type+teacher_id+class_type*teacher_id,data=data)
+#fit
+#anova(full_model,fit)
+```
+
+
+
+**Tukey's range test**
+
+We conducted Tukey’s method provides insights into the confidence intervals for differences in means across all pairs of class types to answer our second primary question of interest: which class type is associated with the highest math scaled scores in 1st grade
+
+```{r Tukey CL , echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.height=5, fig.align = "center"}
+anova.tukey=aov(mean_math_score~class_type, data=data)
+tukey_result <- TukeyHSD(anova.tukey,conf.level = 0.95,order=TRUE)
+
+tukey_df <- as.data.frame(tukey_result$class_type)
+
+tukey_df <- data.frame(
+  Group_Diff = c("regular+aide-regular", "small-regular", "small-regular+aide"),
+  diff = c(3.556144, 12.966243, 9.410100),
+  lwr = c(-4.530511, 5.334292, 1.461384),
+  upr = c(11.64280, 20.59819, 17.35882),
+  p_adj = c(0.5551181442, 0.0002303088, 0.0154865385)
+)
+
+ggplot(tukey_df, aes(x = Group_Diff, y = diff)) +
+  geom_point() +
+  geom_errorbar(aes(ymin = lwr, ymax = upr), width = 0.2) +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +  
+  labs(title = "Tukey HSD Results",
+       x = "Group Difference",
+       y = "Mean Difference") +
+  theme_minimal()
+
+
+```
+
+Upon comparing regular classes with regular classes having an aide, we find that the 95% confidence interval contains zero. This suggests that there is no significant difference between these factors at the significance level 0.05.  
+
+
+However, upon examining the confidence intervals for the other two comparisons, we observe that they do not contain zero. This leads us to conclude that there are significant differences between small class types and others at the significance level 0.05.  
+
+This test indicates that small class size is associated with the highest mean math scores in 1st grade.
+
+Result of our analysis seems reasonable for following reasons: 
+
+Smaller class sizes and regular classes with full-time teacher aides promote individualized attention, reduced distractions, tailored instruction, and increased student participation, leading to higher academic performance of math score. 
+
+
+***
+
+
+># 6. Sensitivity analysis
+
+### 6.1 Model Diagnostics
+
+
+```{r model dignostic plot , echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.height=5, fig.align = "center"}
+
+res_plot = ggplot(fit)+ geom_point(aes(x=.fitted,y=.resid), color="blue")+ labs(title="Residual Plot", x="fitted mean math scores", y="resiwduals")
+
+
+qq_plot = ggplot(fit , aes(sample = rstandard(fit))) + geom_qq(color = 'blue') + stat_qq_line(color = 'dimgrey')+ labs(title="QQ Plot", x="theoretical quantile", y="standardized residual quantile")
+
+
+# Assume plot1 and plot2 are your ggplot objects
+grid.arrange(res_plot, qq_plot, ncol = 2)
+```
+
+
+
+
+
+```{r ,echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.height=5, fig.align = "center"}
+
+
+data_median=merged_data %>%
+  group_by(teacher_id) %>%
+  summarize(median_math_score = median(math1) ,school_id = first(school_id),
+           teacher_experience=first(teacher_experience),class_type=first(class_type) )
+
+med_fit=lm(median_math_score~class_type+school_id,data=data_median)
+
+
+
+# Levene test eqaul variance:
+
+#leven=summary(aov(abs(fit$residuals)~class_type,data=data))
+#med_leven=summary(aov(abs(med_fit$residuals)~class_type,data=data))
+
+
+
+calculate_residual_means <- function(model, data, grouping_variable) {
+  residuals <- resid(model)
+  
+  data$residuals <- abs(residuals)
+  data$group <- data[[grouping_variable]]
+  
+  group_means <- aggregate(residuals ~ group, data = data, FUN = mean)
+  
+  return(group_means)
+}
+
+
+#cbind(calculate_residual_means(fit, data, "class_type"),calculate_residual_means(med_fit, data, "class_type"))
+
+
+
+#shapiro.test(fit$residuals)
+#shapiro.test(med_fit$residuals)
+
+#box_cox=boxcox(mean_math_score~class_type+school_id, data=data)
+#lamba=box_cox$x[which.max(box_cox$y)]
+#box_fit=lm((mean_math_score^lamba-1)/lamba~class_type+school_id,data)
+#shapiro.test(box_fit$residuals)
+
+#durbinWatsonTest(fit)
+
+
+```
+
+
+- **Equal Variance Assumption**:
+According to the Residual Plot, It is hard to detect any patterns but there are residuals that are on the extreme side, so we conducted `Leven's test` to check equal variance. 
+Test output implies that the p-value is 0.09, we cannot reject the null hypothesis and indicates that we may conclude that variance among groups is the same at a significance level of 0.05.
+
+
+- **Normality Assumption**:
+According to the QQ plot, we can detect heavy tails on both ends, therefore normality assumption may be violated. 
+We take `The Shapiro-Wilk test` for deeper analysis. Since the P-value of the test is less than 0.05,  we may reject the null hypothesis and conclude that the data does not follow normal distribution. 
+To solve the non-normality issue, we conducted a `box-cox` transformation of the response variable as a remedy. 
+However, the transformed response variable still rejects the null hypothesis at the 0.05 significance level. we decided not to apply Boxcox transformation for our model. 
+
+- **Independence Assumption**:
+According to the `Durbin-Watson test`, the Test output implies that the P-value is 0.42, we cannot reject the Null hypothesis and may conclude that errors are independent of each other.
+The result of this test is crucial because one of the fundamental assumptions of of our model is that the residuals are independent of each other.
+
+### 6.2 Median as a summary measure 
+
+```{r ,echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.height=5, fig.align = "center"}
+#med_res_plot = ggplot(med_fit)+ geom_point(aes(x=.fitted,y=.resid), color="skyblue")+ labs(title="Median Residual Plot", x="fitted median math scores", y="resiwduals")
+med_qq_plot = ggplot(med_fit , aes(sample = rstandard(med_fit))) + geom_qq(color = 'skyblue') + stat_qq_line(color = 'dimgrey')+ labs(title="Median QQ Plot", x="theoretical quantile", y="standardized residual quantile")
+
+
+#grid.arrange(med_res_plot,med_qq_plot,ncol = 2)
+
+model_res=ggplot(data, aes(x = class_type)) +
+  geom_point(aes(y = fit$residuals, color = "Mean model"), position = position_jitter(width = 0.1), alpha = 0.7) +
+  geom_point(aes(y = med_fit$residuals, color = "Median model"), position = position_jitter(width = 0.1), alpha = 0.7) +
+  labs(title = "Comparison of Residuals from Two Models", x = "Star1", y = "Residuals") +
+    scale_color_manual(name = "Model", values = c("Mean model" = "red", "Median model" = "blue")) +
+  theme_minimal()
+
+
+grid.arrange(med_qq_plot,model_res,ncol = 2)
+
+```
+
+**Table Comparing mean absolute value of residual of two models**
+
+| Class size | Mean as a summary measure  | Median as a summary measure |
+|---------------|-------------|-------------|
+| Small         | 12.43     |13.89
+| Regular       | 10.97     |12.04
+| Regular + Aide| 9.57      |10.26
+
+
+
+After exploring the possibility of using the median as an alternative summary measure for remedy of non-normality issue,we found that the p-value of the `Shapiro-Wilk test` and the QQ plot above indicate the normality of standardized residual.  However, the P-value of `Levene's test` using the median is less than 0.05, indicating that when applying the median instead of the mean, violates the assumption of equal variance. Additionally, When comparing the mean of the absolute values of residuals across groups by plot and table above, we can confirm that the violation of equal variance is larger when the median is applied as a summary measure.
+
+
+We have decided to keep **mean** as our summary measure for our analysis even though the median does not violate the normality assumption because our primary goal is to compare representative values across different class sizes and the unequal equal variance assumption could significantly impact the precision of the estimated effects which does not align with our goal. 
+
+
+***
+
+
+***
+
+># 7. Discussion
+
+
+
+We used the STAR project data to answer two main questions: Are there discernible differences in math scaled scores among 1st-grade students across different class sizes? If such differences exist, which class size is most strongly associated with higher math scaled scores in 1st grade? 
+
+The inferential analysis revealed that there are indeed differences, with the smallest class size being most strongly associated with higher math scaled scores. 
+
+Based on the given results, here are some suggestions:
+
+Considering the quantitative relationship observed between smaller class sizes and higher math scores, school administrators may consider policies to reduce class sizes. Since the our research indicate a positive association between smaller class sizes and academic performance, reducing class sizes could potentially enhance academic outcomes of students .
+
+
+Additional research could be conducted based on this research findings. For instance, investigating whether the relationship between smaller class sizes and math scores persists in different grades or subjects could be explored. Such research could provide further insights and have a greater impact on educational policies and practice
+
+The STAR experiment's strengths lie in its randomized assignment of students to different class size conditions (small, regular, and regular with a teacher aide), thorough monitoring by graduate students, a large sample size exceeding 10,000 students, and longitudinal follow-up over four years from kindergarten to third grade. These aspects collectively ensure the integrity of the experimental design, minimize biases, enhance statistical power, and provide valuable insights into the sustained impact of class size on academic performance.
+
+
+In the extended analysis, it became evident that additional support for low-income students should be made beyond the provision of free lunches. Direct policies targeting students academic needs could be beneficial. Moreover, having more school-related data would be advantageous. The current dataset does not provide sufficient variables for analyzing school-level average scores effectively from the outset.
+
+
+
+
+***
+
+># 8. Extended Analysis
+
+
+
+We have examined how the type of class may impact the mean math score. Furthermore, We want to explor other factors that could potentially influence students academic performance. 
+
+
+During the descriptive analysis above at 4, We observed significant differences in average scores across different __school IDs__. This made me to think about the underlying reasons for such variations.
+
+We hypothesize three factors: differences in parental `income levels` among schools, `variations in school locations`, and potentially diverse average `attendance rates` among school.
+
+We may speculate that these three differences might ultimately influence the students math scores.
+
+
+At first, we will explore relationship between three factors below and School ID and if association is found, we will find out how these factors can influence math school of first grade students, 
+
+- `mean_math_score_school` : the average math score per school
+- `mean_attendance`: mean school attendance rate per school
+- `school_urban`: geographical location of the school
+- `free_lunch_ratio`: mean ratio of students with Free Lunch per school, factor that may represent parental income level. (students not receiving free lunch are presumed to come from higher-income families)
+
+__All variables in the analysis are grouped by `school_ID`__
+
+
+
+### 8.1 Exploratory Data Analysis for extended analysis
+
+\
+
+
+
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+
+
+
+ex_columns= c("g1surban","g1tmathss",'g1present','g1freelunch','g1schid')
+
+ex_data= dataset[,ex_columns]
+colnames(ex_data) <- c( "school_urban", "math1",'present_day','free_lunch','school_ID')
+ex_data=na.omit(ex_data)
+
+ex_data$school_urban <- factor(ex_data$school_urban, labels = c("Inner city", "Suburban", "Rural", "Urban"))
+ex_data$free_lunch <- factor(ex_data$free_lunch, labels = c("Free Lunch", "Non Free Lunch"))
+
+
+free_lunch_ratio <- ex_data %>%
+  group_by(school_ID) %>%
+  summarize(free_lunch_ratio = mean(free_lunch == "Free Lunch", na.rm = TRUE))
+
+school_means <- ex_data %>%
+  group_by(school_ID) %>%
+  summarize(mean_math_score_school = mean(math1))
+
+school_urban <- ex_data %>%
+  distinct(school_ID, school_urban)
+
+attendance_means <- ex_data %>%
+  group_by(school_ID) %>%
+  summarize(mean_attendance = mean(present_day))
+
+
+school_data <- left_join(school_means, free_lunch_ratio, by = "school_ID") %>%
+  left_join(attendance_means, by = "school_ID") %>%
+  left_join(school_urban, by = "school_ID")
+
+```
+
+##### Summary Statistics of three quantitative variables for extended anaylsis {.tabset}
+
+###### mean_math_score_school {-}
+```{r,echo=FALSE}
+summary_df <- data.frame(
+  Summary= c("minimum", "1st quantile", "Median", "Mean", "3rd quantile", "maximum", "standard deviation"),
+   value = c(489.4, 517.5, 530/3, 530.4,543.0, 570.7,20)
+)
+
+knitr::kable(summary_df)
+```
+
+###### mean_attendance {-}
+```{r,echo=FALSE}
+
+summary_df <- data.frame(
+  Summary= c("minimum", "1st quantile", "Median", "Mean", "3rd quantile", "maximum", "standard deviation"),
+  value = c(137.5, 145.4, 148, 150.5,152.3, 173.7,8.6)
+)
+
+knitr::kable(summary_df)
+```
+
+###### Free_lunch_ratio {-}
+```{r,echo=FALSE}
+summary_df <- data.frame(
+   Summary= c("minimum", "1st quantile", "Median", "Mean", "3rd quantile", "maximum", "standard deviation"),
+  value = c(0.03, 0.32, 0.43, 0.51,0.70, 1,0.27)
+)
+
+knitr::kable(summary_df)
+```
+
+## {-}
+
+
+##### Frquency table of school_urban for extended anaylsis {.tabset}
+
+###### School_Urban  {-}
+
+```{r,echo=FALSE}
+school_table <- data.frame(
+  "Class Type" = c("Inner city", "Suburban", "Rural", "Urban"),
+  "Count" = c(15, 17, 37,7)
+)
+knitr::kable(school_table)
+
+```
+
+## {-}
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.height=5, fig.align = "center"}
+
+
+
+attendance_vs_math_score_plot <- ggplot(school_data, aes(x = mean_math_score_school, y = mean_attendance, color = as.factor(school_urban))) +
+  geom_point() +
+  labs(title = "Math Score vs Attendance Difference by School Urbanity",
+       x = "Mean Math Score",
+       y = "Mean Attendance",
+       color = "School Urbanity") +
+  scale_color_manual(values = c("Inner city" = "lightblue", "Suburban" = "orange", "Rural" = "green", "Urban" = "purple")) +
+  theme_minimal()
+
+
+free_lunch_vs_math_score_plot <- ggplot(school_data, aes(x = mean_math_score_school, y = free_lunch_ratio, color = as.factor(school_urban))) +
+  geom_point() +
+  labs(title = "Math Score vs Free Lunch Ratio by School Urbanity",
+       x = "Mean Math Score",
+       y = "Free Lunch Ratio",
+       color = "School Urbanity") +
+  scale_color_manual(values = c("Inner city" = "lightblue", "Suburban" = "orange", "Rural" = "green", "Urban" = "purple")) +
+  theme_minimal()
+
+
+grid.arrange(attendance_vs_math_score_plot,free_lunch_vs_math_score_plot ,ncol = 2)
+
+
+```
+
+When examining the two figures above, it appears that there is no clear linearity between attendance and average math scores. Additionally, there seems to be a linear decrease in math scores as the number of students receiving free lunch increases. Furthermore, schools located in inner city areas generally have lower math scores, and a higher ratio of students receiving free lunch. This suggests that students from lower-income families tend to reside in inner city areas.
+
+### 8.2 Regression Analysis for extended analysis
+
+When considering urbanicity, a linear relationship between mean math scores appears evident in the case of Inner city. However, since Inner city areas exhibit high levels of free lunch, as seen in the figure above, analyzing based solely on parental income factors might suffice due to `multicollinearity`. Additionally, the analysis of urbanicity poses challenges due to the limited sample size, especially in urban areas where only 7 samples are available. Consequently, it appears that attendance has minimal correlation with math scores, and the urbanicity variable lacks sufficient samples for robust analysis. Hence, we will proceed with a simple linear regression analysis focusing on the variable `free_lunch_ratio`
+
+
+
+**Fitted results**
+
+The model we fitted is as follows: 
+
+$$
+Y_{i} = \beta +\alpha_i+\epsilon_{i},  \ i=1,\ldots,76  \
+$$
+
+- $Y_{i}$ = expected mean math score of the $i$th school. 
+
+- $\alpha_i$ = expected change of mean math score on ratio of students receiving free lunch at each school.
+
+- $\beta$ = intercept indicating the predicted value of the dependent variable when `free_lunch_ratio` is fixed. 
+
+- $\epsilon_{i}$ = the random error in the ith school. 
+
+\
+
+
+From the fitted model we may interpret our result by:
+
+When ratio of students receiving free lunch at each school increases by 1, mean math score is expected to decrease by 45.3.
+
+
+**ANOVA Table**
+
+| source | sum of square  | degree of freedom | F values | p-value 
+|------|-------|-------|------|-------|-------|
+| free_lunch_ratio | 10957| 1| 41.984|  9.0932e-09 | 
+| residuals  | 19313| 74|
+
+ANOVA Table above shows that p-value of free_lunch_ratio is approximately 0, We may conclude that effect of free_lunch_ratio does exist at significant level 0.05.
+
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE, fig.width=10, fig.height=5, fig.align = "center"}
+
+
+lm_model=lm(mean_math_score_school~free_lunch_ratio,data=school_data)
+fitted_values <- predict(lm_model)
+
+scatter_plot <- ggplot(school_data, aes(x = free_lunch_ratio, y = mean_math_score_school)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "blue") +
+  labs(title = "Mean Math Score and Free Lunch Ratio",
+       x = "Free Lunch Ratio",
+       y = "Mean Math Score")
+
+residual_plot <- ggplot(school_data, aes(x = free_lunch_ratio, y = resid(lm_model))) +
+  geom_point() +
+  geom_hline(yintercept = 0, linetype = "dashed", color = "red") +
+  labs(title = "Residual Plot",
+       x = "Free Lunch Ratio",
+       y = "Residuals")
+
+
+model_diagnostic_plot <- grid.arrange(scatter_plot, residual_plot, ncol = 2)
+
+```
+
+
+From Figure above indicate a strong relationship between Mean Math Score and Free Lunch Ratio. The positive slope of the regression line indicates that an increase in the Free Lunch Ratio corresponds to a decrease in the Mean Math Score. In addition, variance of the residuals is constant across all levels of the independent variable.
+
+
+### 8.3 Conclusion
+
+Based on the analysis, it appears that there is a negative linear association between the Free Lunch Ratio, which serves as a indicator for parental income levels, and the Mean Math Score. This suggests that students from lower-income backgrounds may face challenges that impact their academic performance in mathematics.
+
+To address this issue, government level support of students from economically disadvantaged backgrounds should be made. This could include providing additional resources and support in schools with higher proportions of students receiving free lunch, such as targeted tutoring, mentorship programs, access to educational resources, and reduce barriers of learning. 
+Additionally, People should focus on improving access to quality education and economic opportunities for disadvantaged communities, and these may contribute to narrowing the achievement gap in mathematics and promoting academic success for all students regardless of economic status.
+
+##
+
+
+***
+
+
+# Acknowledgement {-}
+
+Sehee Han 
+
+Daehyun Chung 
+
+# Reference {-}
+
+Langsrud, Ø. (2003), "ANOVA for Unbalanced Data: Use Type II Instead of Type III Sums of Squares," Statistics and Computing, 13, (pp. 163-167)
+
+
+Kutner, M.H., Nachtsheim, C.J., Neter, J., and Li, W. (2005). Applied
+Linear Statistical Models, 5th edition. (pp. 951-977)
+
+Achilles, C. M. (2012). NCPEA Policy Brief CLASS-SIZE POLICY: THE STAR EXPERIMENT AND RELATED CLASS-SIZE STUDIES, Volume 1, Number 2, October 2012. National Council of Professors of Educational Administration (NCPEA)
+
+C.M. Achilles; Helen Pate Bain; Fred Bellott; Jayne Boyd-Zaharias; Jeremy Finn; John Folger; John Johnston; Elizabeth Word, 2008, "Tennessee's Student Teacher Achievement Ratio (STAR) project"
+
+# Code appendix {-}
+
+
+
+
+# Session info {-}
+
+
+
+```{r}
+sessionInfo()
+```
